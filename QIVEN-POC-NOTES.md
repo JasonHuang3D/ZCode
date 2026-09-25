@@ -83,6 +83,25 @@ the same mines. Nothing here is pushed anywhere.
     sweep `Win32_Process` by CommandLine match for the scratch paths and
     `taskkill /T /F` the leftovers (observed: wrapper tree + five orphaned
     host helpers from an "exited" instance).
+11. **Failed startup is not process exit.** A launched Desktop instance that
+    logs `app_startup_failed` may keep running indefinitely with live helper
+    children (no window), so its background task legitimately stays "running"
+    in the UI and no completion notification arrives. The UI is telling the
+    truth; do not assume the instance died because startup failed.
+12. **TaskStop needs the FULL task id.** Background task ids carry a UUID
+    suffix (`exec_<8hex>-<uuid>`); passing the truncated prefix returns
+    "No task found" while the task keeps running. Always copy the complete id
+    from the launch result or the notification. (Incident: a truncated stop
+    attempt was misread as "devkit exec defect" — it was operator error;
+    the harness and the devkit exec subsystem were both behaving correctly.)
+
+## Toolchain ruling (owner, 2026-09-26)
+
+The portable Node 24.14.0/pnpm scratch environment stays OUT of
+qiven-toolchain-win: that Node version is ZCode-specific (pinned by ZCode's
+own mise.toml). If Qiven later has a concrete cross-repository need for a
+pinned Node, the promotion should be a general-purpose Node tool entry
+decided on its own merits, not a ZCI-specific pin inherited from this PoC.
 
 ## 4. Measured facts worth remembering
 
