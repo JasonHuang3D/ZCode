@@ -56,7 +56,7 @@ import { retryAllowedByFailurePolicy } from "./workflow-model-failure-policy.js"
 import { modelFailureStatusFields, providerRequestIdFromHeaders } from "./runner-telemetry.js";
 import { repairReasoningHistoryAfterSignatureRejection } from "./reasoning-history-normalization.js";
 import { admitAttempt, type AttemptAdmission } from "./request-admission.js";
-import { emitPocEvent, pocProjectionDigest } from "./qiven-poc-emit.js";
+import { emitPocEvent, pocPermitGate, pocProjectionDigest } from "./qiven-poc-emit.js";
 import {
   retryAttemptLoopContinues,
   retryBudgetAllows,
@@ -204,6 +204,7 @@ export async function runGenerateText(input: {
         msgCount: options.messages?.length,
         projectionDigest: pocProjectionDigest(options.messages),
       });
+      pocPermitGate();
       const pendingResult = input.runtime.generateText(options);
       // options 构造成功不等于 runtime 已接受请求；同步 setup 异常会在调用点直接抛出。
       // 只有 generateText 调用返回 pending promise 后才进入 response 归因边界，避免把本地 setup 记成 provider。

@@ -9,6 +9,18 @@
 import { appendFileSync } from "node:fs";
 import { createHash } from "node:crypto";
 
+/**
+ * Qiven PoC 专用错误：final-permit 点的本地 pre-send 拒绝。
+ * 仅在 QIVEN_POC=1 且 QIVEN_POC_PERMIT=deny 时抛出；专门类型便于上游与
+ * 真实 provider 错误区分。
+ */
+export class QivenPocPermitDenied extends Error {
+  constructor() {
+    super("QIVEN_POC permit denied (pre-send)");
+    this.name = "QivenPocPermitDenied";
+  }
+}
+
 export interface PocEventPayload {
   phase: "logical" | "final-permit";
   runner: "generate" | "stream";
@@ -55,5 +67,17 @@ export function pocProjectionDigest(messages: unknown): string | undefined {
     return createHash("sha256").update(JSON.stringify(messages)).digest("hex").slice(0, 16);
   } catch {
     return undefined;
+  }
+}
+
+/**
+ * final-permit 点的 pre-send 拒绝门：QIVEN_POC_PERMIT=deny 时在 emitPocEvent
+ * 之后、runtime 调用之前抛出 QivenPocPermitDenied。额外以 QIVEN_POC=1 为前提，
+ * 任何其他取值 / 未设置均为纯观测（与既有行为逐字一致）。
+ */
+export function pocPermitGate(): void {
+  if (!pocEnabled()) return;
+  if (process.env.QIVEN_POC_PERMIT === "deny") {
+    throw new QivenPocPermitDenied();
   }
 }

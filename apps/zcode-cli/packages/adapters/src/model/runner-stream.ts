@@ -47,7 +47,7 @@ import {
 } from "./runner-debug.js";
 import { sanitizeModelNetworkHeaders } from "./runner-network-headers.js";
 import { admitAttempt, type AttemptAdmission } from "./request-admission.js";
-import { emitPocEvent, pocProjectionDigest } from "./qiven-poc-emit.js";
+import { emitPocEvent, pocPermitGate, pocProjectionDigest } from "./qiven-poc-emit.js";
 import {
   retryAttemptLoopContinues,
   retryBudgetAllows,
@@ -318,6 +318,7 @@ export async function* runStreamText(input: {
         msgCount: options.messages?.length,
         projectionDigest: pocProjectionDigest(options.messages),
       });
+      pocPermitGate();
       const streamResult = input.runtime.streamText(options);
       result = streamResult;
       streamIterator = streamResult.fullStream[Symbol.asyncIterator]();
