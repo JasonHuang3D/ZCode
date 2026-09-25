@@ -56,6 +56,7 @@ import { retryAllowedByFailurePolicy } from "./workflow-model-failure-policy.js"
 import { modelFailureStatusFields, providerRequestIdFromHeaders } from "./runner-telemetry.js";
 import { repairReasoningHistoryAfterSignatureRejection } from "./reasoning-history-normalization.js";
 import { admitAttempt, type AttemptAdmission } from "./request-admission.js";
+import { emitPocEvent, pocProjectionDigest } from "./qiven-poc-emit.js";
 import {
   retryAttemptLoopContinues,
   retryBudgetAllows,
@@ -193,6 +194,16 @@ export async function runGenerateText(input: {
       // 部分非流式 provider/fetch 兼容层收到 AbortSignal 后不会及时 settle
       // generateText promise，导致 runtime 已 Stop，goal verifier 仍要等上游自然返回才收口。
       // adapter 是本地取消契约边界：signal 一旦 abort 就立即拒绝，迟到 provider 结果只丢弃。
+      // Qiven PoC seam：final-permit 观察点，options 已构造完成、即将发出的最后一次机会。
+      emitPocEvent({
+        phase: "final-permit",
+        runner: "generate",
+        attempt,
+        providerId: String(resolved.providerId),
+        modelId: String(resolved.modelId),
+        msgCount: options.messages?.length,
+        projectionDigest: pocProjectionDigest(options.messages),
+      });
       const pendingResult = input.runtime.generateText(options);
       // options 构造成功不等于 runtime 已接受请求；同步 setup 异常会在调用点直接抛出。
       // 只有 generateText 调用返回 pending promise 后才进入 response 归因边界，避免把本地 setup 记成 provider。

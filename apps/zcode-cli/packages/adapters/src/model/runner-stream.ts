@@ -47,6 +47,7 @@ import {
 } from "./runner-debug.js";
 import { sanitizeModelNetworkHeaders } from "./runner-network-headers.js";
 import { admitAttempt, type AttemptAdmission } from "./request-admission.js";
+import { emitPocEvent, pocProjectionDigest } from "./qiven-poc-emit.js";
 import {
   retryAttemptLoopContinues,
   retryBudgetAllows,
@@ -307,6 +308,16 @@ export async function* runStreamText(input: {
         },
         statusPublishOptions(input, admission),
       );
+      // Qiven PoC seam：final-permit 观察点，options 已构造完成、即将发出的最后一次机会。
+      emitPocEvent({
+        phase: "final-permit",
+        runner: "stream",
+        attempt,
+        providerId: String(resolved.providerId),
+        modelId: String(resolved.modelId),
+        msgCount: options.messages?.length,
+        projectionDigest: pocProjectionDigest(options.messages),
+      });
       const streamResult = input.runtime.streamText(options);
       result = streamResult;
       streamIterator = streamResult.fullStream[Symbol.asyncIterator]();

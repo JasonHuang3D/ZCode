@@ -42,6 +42,7 @@ import {
   type ResolvedAiSdkModel,
 } from "./runner-runtime.js";
 import { createModel, type ModelExecutionRequest } from "./model.js";
+import { emitPocEvent } from "./qiven-poc-emit.js";
 
 export type { AiSdkModelRetryOptions } from "./retry-policy.js";
 export type {
@@ -267,6 +268,18 @@ export class AiSdkModelAdapter {
       options: options.options,
       executor: {
         generateText: (request) => {
+          // Qiven PoC seam：逻辑调用入口，在任何转换之前观察每次逻辑模型调用。
+          const pocModelCall = getCurrentModelInvocationContext()?.modelCall;
+          emitPocEvent({
+            phase: "logical",
+            runner: "generate",
+            operation: pocModelCall?.operation,
+            actorKind: pocModelCall?.actorKind,
+            providerId: resolved.providerId,
+            modelId: resolved.modelId,
+            msgCount: request.messages.length,
+            toolCount: request.tools?.length ?? 0,
+          });
           const legacyRequest = toLegacyRequest(request);
           return this.generateTextWithResolved(
             legacyRequest,
@@ -275,6 +288,18 @@ export class AiSdkModelAdapter {
           );
         },
         streamText: (request) => {
+          // Qiven PoC seam：逻辑调用入口，在任何转换之前观察每次逻辑模型调用。
+          const pocModelCall = getCurrentModelInvocationContext()?.modelCall;
+          emitPocEvent({
+            phase: "logical",
+            runner: "stream",
+            operation: pocModelCall?.operation,
+            actorKind: pocModelCall?.actorKind,
+            providerId: resolved.providerId,
+            modelId: resolved.modelId,
+            msgCount: request.messages.length,
+            toolCount: request.tools?.length ?? 0,
+          });
           const legacyRequest = toLegacyRequest(request);
           return this.streamTextWithResolved(
             legacyRequest,
