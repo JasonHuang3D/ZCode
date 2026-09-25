@@ -87,6 +87,14 @@ the same mines. Nothing here is pushed anywhere.
 8. **An agent process only spawns when a workspace session opens in the GUI** —
    a Desktop-originated model call is never headless. Plan Desktop-chain trials
    accordingly (loading proof vs full-chain proof are different claims).
+8a. **External browsers opened from an env-isolated app inherit the isolation**
+   (owner-observed 2026-09-26): the dev app's OAuth popup launched the system
+   browser with the scratch `USERPROFILE`, so it opened with an empty scratch
+   profile and looked like "my browser history is gone". The real browser
+   profile on disk was untouched (verified); the fix was closing the isolated
+   window and relaunching normally. Corollary of pitfall 7: never complete real
+   logins inside isolated trials, and avoid opening external browsers from
+   env-overridden apps.
 9. **In-session searching**: `grep -r` over this tree trips the Qiven router's
    sweep class (exec-lease). `git grep` reads the index and passes. Builds and
    long steps: harness background bash (`run_in_background`), never polling.
