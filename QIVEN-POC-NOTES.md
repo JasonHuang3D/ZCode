@@ -66,11 +66,24 @@ the same mines. Nothing here is pushed anywhere.
 6. **Scratch profile must pre-exist with standard structure**: without
    `<scratch-profile>/AppData/Roaming` the ARMS RUM SDK dies at module init
    ("Failed to get 'userData' path") before anything else logs.
-7. **OPEN RESIDUAL — isolated packaged instance exits cleanly (exit 0, no crash
-   entry, no error line) after early init + renderer/GPU init, before any
-   workspace session spawns an agent.** Undiagnosed within PoC budget.
-   Continuations: the repo's own `pnpm dev:desktop:test` isolated entry, or an
-   interactive owner-hands run of the isolated packaged build.
+7. **RESOLVED via dev mode — packaged-app isolated instance still open.** The
+   isolated PACKAGED instance exits cleanly (exit 0, no crash entry) after
+   early init + renderer/GPU init, before spawning an agent (undocumented
+   cause; keep the scratch-profile/USERPROFILE recipe above if retried).
+   The WORKING route for a Desktop-chain trial is the repository's own dev
+   entry: `pnpm dev:desktop:test` (builds the patched agent fresh, then starts
+   Electron dev as "ZCode Dev" — separate app identity, no single-instance
+   collision). Under the same scratch env pinning, the dev Desktop spawned
+   the patched agent (`electron.exe` as Node running
+   `apps/zcode-cli/packages/cli/dist/zcode.cjs app-server --stdio --surface
+   desktop`), and one GUI-sent message produced the full evidence chain:
+   `logical` (operation=agent_step, actorKind=main, msgCount=6, toolCount=33
+   on the desktop surface) then `final-permit` (attempt=1, msgCount=4,
+   projectionDigest) then the mock wire hit (stream, msgCount=4) — the same
+   two-phase projection change as the CLI run. Recipe: export the isolation
+   envs of section 5 + `QIVEN_POC*`, run `pnpm dev:desktop:test` in background,
+   click a new chat in the "ZCode Dev" window (never log in a real account),
+   pick `poc-mock-model` if prompted, send `hello`.
 8. **An agent process only spawns when a workspace session opens in the GUI** —
    a Desktop-originated model call is never headless. Plan Desktop-chain trials
    accordingly (loading proof vs full-chain proof are different claims).
@@ -94,6 +107,10 @@ the same mines. Nothing here is pushed anywhere.
     from the launch result or the notification. (Incident: a truncated stop
     attempt was misread as "devkit exec defect" — it was operator error;
     the harness and the devkit exec subsystem were both behaving correctly.)
+13. **TaskStop can leave wrapper stragglers.** After TaskStop of a dev-run
+    task, the `sh.exe`/cmd wrapper chain survived with children; sweep by
+    CommandLine match and `taskkill /T /F` the root before declaring clean
+    (the kill also sweeps job-grouped helpers of the stopped app).
 
 ## Toolchain ruling (owner, 2026-09-26)
 
