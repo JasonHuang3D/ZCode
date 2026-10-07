@@ -6,6 +6,8 @@ export type BuiltinZCodeSlashCommandHelpEntry = {
   usage: string;
 };
 
+export const QIVEN_FORK_MARKER = "qiven fork | agent base ZCode 3.14.3 (29628c9)";
+
 export const BUILTIN_ZCODE_SLASH_COMMAND_HELP_ENTRIES: readonly BuiltinZCodeSlashCommandHelpEntry[] =
   [
     {
@@ -186,6 +188,15 @@ export const BUILTIN_ZCODE_SLASH_COMMAND_HELP_ENTRIES: readonly BuiltinZCodeSlas
       name: "goal",
       summary: "Show or set the current session goal.",
       usage: "/goal [pause|resume|clear|replace <objective>|<objective>]",
+    },
+    {
+      details: [
+        `Prints the fork identity of this agent: ${QIVEN_FORK_MARKER}.`,
+        "The marker names the fork, the upstream ZCode base version, and the base commit.",
+      ],
+      name: "qiven",
+      summary: `Show the fork identity (${QIVEN_FORK_MARKER}).`,
+      usage: "/qiven",
     },
     {
       details: [

@@ -1,4 +1,5 @@
 import { join } from "node:path";
+import { QIVEN_FORK_MARKER } from "@zcode/shared";
 import {
   BUILTIN_WORKFLOW_COMMAND_NAME,
   expandBuiltinWorkflowCommandPrompt,
@@ -6,6 +7,7 @@ import {
 
 const BUILTIN_PROMPT_COMMAND_PATTERN = /^\/([^\s]+)(?:\s+([\s\S]*))?$/;
 const INIT_COMMAND_NAME = "init";
+const QIVEN_COMMAND_NAME = "qiven";
 
 interface ResolveZCodeBuiltinPromptCommandOptions {
   /**
@@ -34,6 +36,14 @@ export function resolveZCodeBuiltinPromptCommand(
       targetPath: join(workingDirectory, "AGENTS.md"),
       workingDirectory,
     });
+  }
+
+  if (invocation.name === QIVEN_COMMAND_NAME) {
+    return [
+      "The user asked for this agent's fork identity.",
+      "Reply with exactly the following single line, with no code fence and no other text:",
+      QIVEN_FORK_MARKER,
+    ].join("\n");
   }
 
   if (invocation.name === BUILTIN_WORKFLOW_COMMAND_NAME) {
