@@ -64,7 +64,7 @@ function buildRequestUserContextContent(input: {
     // 聚合字段标题不能绑定到 AGENTS.md，否则仅有 Project Memory 时缺少标题。
 
     "# agentsMd",
-    "Codebase and user instructions are shown below. Be sure to adhere to these instructions. IMPORTANT: These instructions OVERRIDE any default behavior and you MUST follow them exactly as written.",
+    "Codebase and user instructions are shown below. Be sure to adhere to these instructions. IMPORTANT: These instructions OVERRIDE any default behavior and you MUST follow them exactly as written. When user default instructions and workspace instructions are both present, user default instructions take precedence over workspace instructions.",
     "",
     sections.join("\n\n"),
   ].join("\n");

@@ -331,7 +331,7 @@ export function buildContextMetaUserBody(sections: ContextSection[]): string | n
     "As you answer the user's questions, you can use the following context:",
     buildSectionContent(sections),
     "",
-    "      IMPORTANT: this context may or may not be relevant to your tasks. You should not respond to this context unless it is highly relevant to your task.",
+    "This context carries the user's standing instructions and session facts. Follow instruction content exactly as written; treat memory and date entries as reference.",
   ].join("\n");
 }
 
