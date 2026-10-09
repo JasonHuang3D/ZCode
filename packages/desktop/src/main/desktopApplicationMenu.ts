@@ -5,12 +5,10 @@ import {
   getDesktopMenuMessage,
   isValidShortcutBinding,
   ZCODE_ENV,
-  ZCODE_PRODUCT_FLAVOR,
   type DesktopCommandId,
   type Locale,
 } from "@zcode/shared";
 import { readZCodeStdioTapDevState } from "@zcode/services/node";
-import { CHECK_FOR_UPDATE_MENU_ID, setAutoUpdaterMenuLocale } from "./autoUpdater.js";
 import {
   DESKTOP_ZOOM_MAX_LEVEL,
   DESKTOP_ZOOM_MIN_LEVEL,
@@ -117,17 +115,8 @@ function buildApplicationMenuTemplate(options: {
                 label: getLabel(desktopMenuMessageIds.helpAbout),
                 click: () => void options.executeDesktopCommand(DesktopCommandIds.ShowAbout),
               },
-              // 更新入口跟随产品身份：Preview 禁用更新器，生产后端的 Preview 也不例外。
-              ...(ZCODE_PRODUCT_FLAVOR === "production"
-                ? [
-                    {
-                      id: CHECK_FOR_UPDATE_MENU_ID,
-                      label: getLabel(desktopMenuMessageIds.helpCheckForUpdates),
-                      click: () =>
-                        void options.executeDesktopCommand(DesktopCommandIds.CheckForUpdates),
-                    },
-                  ]
-                : []),
+              // qiven fork: 更新器已按构建级禁用（PR22 doc 08 section 3 item 3），
+              // “检查更新”菜单项随更新入口一并移除。
               { type: "separator" as const },
               {
                 label: getLabel(desktopMenuMessageIds.appServices),
@@ -259,16 +248,7 @@ function buildApplicationMenuTemplate(options: {
                 label: getLabel(desktopMenuMessageIds.helpAbout),
                 click: () => void options.executeDesktopCommand(DesktopCommandIds.ShowAbout),
               },
-              ...(ZCODE_PRODUCT_FLAVOR === "production"
-                ? [
-                    {
-                      id: CHECK_FOR_UPDATE_MENU_ID,
-                      label: getLabel(desktopMenuMessageIds.helpCheckForUpdates),
-                      click: () =>
-                        void options.executeDesktopCommand(DesktopCommandIds.CheckForUpdates),
-                    },
-                  ]
-                : []),
+              // qiven fork: 更新器已按构建级禁用，“检查更新”菜单项随更新入口一并移除。
               { type: "separator" as const },
             ]
           : []),
@@ -375,7 +355,7 @@ export function rebuildApplicationMenu(options: {
       }),
     ),
   );
-  setAutoUpdaterMenuLocale(options.currentApplicationLocale);
+  // qiven fork: 更新入口已移除，不再同步更新菜单项文案。
   if (!app.isPackaged) {
     updateZCodeStdioTapDevMenuState();
   }
