@@ -37,6 +37,14 @@ function readBootstrapDataBaseDirFromDisk(
 }
 
 export function applyEarlyDataBaseDirBootstrap(): string | null {
+  // qiven fork: qualification isolation (PR22 doc 08 section 3 item 5).
+  // ZCODE_DATA_BASE_DIR 显式生效时它就是权威数据根：跳过真实 HOME 下
+  // setting.json 的 bootstrap 读取。否则该读取既会 consult 真实 profile，
+  // 其 dataBaseDir 字段又会在 services/paths.ts 里以 setDataBaseDir 优先级
+  // 反向覆盖环境变量指定的 scratch 根。变量缺席时行为不变。
+  if (process.env.ZCODE_DATA_BASE_DIR?.trim()) {
+    return null;
+  }
   const dataBaseDir = readBootstrapDataBaseDirFromDisk();
   if (dataBaseDir) {
     // 启动早期就把 dataBaseDir 注入进来，避免 logger / crashReporter 先按默认 HOME 建目录，

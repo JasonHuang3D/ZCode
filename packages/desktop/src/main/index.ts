@@ -268,6 +268,24 @@ if (!shouldUseElectronDefaultUserDataPath) {
 }
 process.title = runtimeApplicationName;
 
+// qiven fork: qualification isolation record (PR22 doc 08 section 3 item 5).
+// 未达标自建构建经环境变量在两个表面上全量隔离：ZCODE_DATA_BASE_DIR 指向 scratch
+// 数据根（.zcode 树，含凭据/任务/崩溃暂存，host/agent 子进程继承同一变量）；
+// ZCODE_DESKTOP_APPLICATION_NAME / ZCODE_DESKTOP_USER_DATA_DIR 重定向 electron
+// userData/AppData 面（独立单实例锁身份）。任一隔离变量生效时输出一行启动日志，
+// 供资格验证机械核对已解析的两个表面；变量全部缺席时默认行为不变。
+if (
+  process.env.ZCODE_DATA_BASE_DIR?.trim() ||
+  process.env.ZCODE_DESKTOP_APPLICATION_NAME?.trim() ||
+  process.env.ZCODE_DESKTOP_USER_DATA_DIR?.trim()
+) {
+  logger.info(
+    `[isolation] dataBaseDir=${getDataBaseDir()} userData=${app.getPath("userData")} sessionData=${app.getPath(
+      "sessionData",
+    )} appName=${runtimeApplicationName}`,
+  );
+}
+
 process.on("unhandledRejection", (reason) => {
   logger.error("unhandledRejection:", reason);
 });
